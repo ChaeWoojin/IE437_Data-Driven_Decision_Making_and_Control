@@ -99,17 +99,20 @@ def main():
     for playlist in tqdm(playlists):
         print(f"Getting tracks from playlist: {playlist['name']}")
         tracks = get_playlist_tracks(sp, playlist['id'])
-        all_tracks.extend(tracks)
+        track_data_with_features = extract_track_info_with_features(tracks, sp)
+        df = pd.DataFrame(track_data_with_features)
+        df.to_csv(playlist['name']+'_features.csv', index=False)
+        # all_tracks.extend(tracks)
 
-    track_data_with_features = extract_track_info_with_features(all_tracks, sp)
+    # track_data_with_features = extract_track_info_with_features(all_tracks, sp)
 
-    # Create a DataFrame
-    df = pd.DataFrame(track_data_with_features)
+    # # Create a DataFrame
+    # df = pd.DataFrame(track_data_with_features)
 
-    # Save DataFrame to CSV
-    df.to_csv('playlist_tracks_with_features.csv', index=False)
+    # # Save DataFrame to CSV
+    # df.to_csv('playlist_tracks_with_features.csv', index=False)
 
-    print("Tracks with audio features from all playlists have been saved to 'playlist_tracks_with_features.csv'.")
+    # print("Tracks with audio features from all playlists have been saved to 'playlist_tracks_with_features.csv'.")
 
 if __name__ == '__main__':
     main()
