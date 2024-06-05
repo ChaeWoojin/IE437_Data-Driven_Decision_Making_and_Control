@@ -2,58 +2,33 @@ import pandas as pd
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Input
-from tensorflow.keras.optimizers import Adam
-from sklearn.utils import shuffle
-from tqdm import tqdm
+from scipy.stats import beta
 
 # Load the dataset
 file_path = './music_pool.csv'
 music_data = pd.read_csv(file_path)
 
 # Features and target
-features = music_data[['Danceability', 'Energy', 'Key', 'Loudness', 'Speechiness', 'Acousticness', 'Instrumentalness', 'Liveness', 'Valence', 'Tempo']]
 target = music_data['like']
 
-# Standardize the features
-scaler = StandardScaler()
-features_scaled = scaler.fit_transform(features)
+# Define the number of songs
+n_songs = len(target)
 
-# Train-test split to simulate the online learning scenario
-X_train, X_test, y_train, y_test = train_test_split(features_scaled, target, test_size=0.2, random_state=42)
-
-# Define the neural network model
-def create_model(input_dim):
-    model = Sequential()
-    model.add(Input(shape=(input_dim,)))
-    model.add(Dense(128, activation='relu'))
-    model.add(Dropout(0.2))
-    model.add(Dense(64, activation='relu'))
-    model.add(Dropout(0.2))
-    model.add(Dense(32, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))
-    model.compile(optimizer=Adam(learning_rate=0.001), loss='binary_crossentropy', metrics=['accuracy'])
-    return model
-
-# Initialize the model
-input_dim = X_train.shape[1]
-model = create_model(input_dim)
+# Initialize Beta priors for each song (a=1, b=1 is a uniform prior)
+priors = np.ones((n_songs, 2))
 
 # Parameters for epsilon-greedy strategy
 epsilon = 0.1
 
 # Function to recommend a slate of songs
-def recommend_slate(model, X, epsilon=0.1, slate_size=5):
+def recommend_slate(priors, epsilon=0.1, slate_size=5):
     if random.uniform(0, 1) < epsilon:
         # Explore: choose a random slate
-        return random.sample(range(X.shape[0]), slate_size)
+        return random.sample(range(n_songs), slate_size)
     else:
-        # Exploit: choose the best slate based on model predictions
-        predictions = model.predict(X)
-        return np.argsort(predictions.ravel())[-slate_size:].tolist()
+        # Exploit: choose the slate with the highest expected probability of being liked
+        mean_prob = priors[:, 0] / (priors[:, 0] + priors[:, 1])
+        return np.argsort(mean_prob)[-slate_size:].tolist()
 
 # Function to simulate user feedback
 def simulate_feedback(slate, true_likes):
@@ -62,49 +37,41 @@ def simulate_feedback(slate, true_likes):
         feedback.append(true_likes[song])
     return feedback
 
-# Function to update the model with new data
-def update_model(model, X, y, epochs=1, batch_size=32):
-    model.fit(X, y, epochs=epochs, batch_size=batch_size, verbose=0)
-    return model
+# Function to update Beta priors with feedback
+def update_priors(priors, slate, feedback):
+    for song, reward in zip(slate, feedback):
+        priors[song, 0] += reward
+        priors[song, 1] += (1 - reward)
 
 # Simulate online learning
-n_iterations = 100
-slate_size = 10
+n_iterations = 50
+slate_size = 5
 accuracies = []
 
-for iteration in tqdm(range(n_iterations)):
-    # Shuffle the training data and reset indices
-    X_train, y_train = shuffle(X_train, y_train, random_state=42)
-    y_train = y_train.reset_index(drop=True)
-    
+for iteration in range(n_iterations):
     # Recommend a slate of songs
-    slate = recommend_slate(model, X_train, epsilon, slate_size)
+    slate = recommend_slate(priors, epsilon, slate_size)
     
     # Simulate user feedback
-    feedback = simulate_feedback(slate, y_train)
+    feedback = simulate_feedback(slate, target.values)
     
-    # Prepare the batch for model update
-    X_batch = X_train[slate]
-    y_batch = np.array(feedback)
+    # Update priors with feedback
+    update_priors(priors, slate, feedback)
     
-    # Update the model with the new batch
-    model = update_model(model, X_batch, y_batch, epochs=1, batch_size=len(slate))
-    
-    # Evaluate the model on the test set
-    loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
-    print(loss, accuracy)
+    # Track accuracy (for simplicity, we use the mean feedback as a proxy for accuracy)
+    accuracy = np.mean(feedback)
     accuracies.append(accuracy)
 
 # Plot the accuracies over iterations
 plt.plot(accuracies)
 plt.xlabel('Iteration')
-plt.ylabel('Accuracy')
+plt.ylabel('Average Feedback (Accuracy)')
 plt.title('Model Accuracy Over Online Learning Iterations')
-plt.savefig('model_accuracy_deep_learning.png')  # Save the plot as an image file
+plt.savefig('model_accuracy_bayesian.png')  # Save the plot as an image file
 
 # Display the saved plot
 from IPython.display import Image
-Image(filename='model_accuracy_deep_learning.png')
+Image(filename='model_accuracy_bayesian.png')
 
 # Display final accuracy
 final_accuracy = accuracies[-1]
