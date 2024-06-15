@@ -1,7 +1,12 @@
 import pandas as pd
 import numpy as np
-from contextualbandits.online import LinUCB
 import matplotlib.pyplot as plt
+from bandit_models.linucb import LinUCBAlgorithm
+from bandit_models.thompson_sampling import ThompsonSamplingAlgorithm
+from bandit_models.epsilon_greedy import EpsilonGreedyAlgorithm
+from bandit_models.ucb1 import UCB1Algorithm
+from bandit_models.softmax import SoftmaxAlgorithm
+from bandit_models.bayesucb import BayesUCBAlgorithm
 
 # Load the dataset
 file_name = './data/spotify_personal_kaggle.csv'
@@ -21,96 +26,128 @@ data = df[features]
 contexts = data.drop(columns=['Like']).values
 rewards = data['Like'].values
 
-# Initialize the LinUCB bandit
-n_arms = 2  # In this case, we have two possible rewards: Like (1) or Not Like (0)
-alpha = 1.0  # Exploration parameter
-linucb = LinUCB(nchoices=n_arms, alpha=alpha)
-
-# Initial learning phase with the first 100 tracks
+# Initial learning phase size
 initial_phase_size = 100
-for i in range(initial_phase_size):
-    context = contexts[i].reshape(1, -1)
-    chosen_arm = linucb.predict(context)
-    actual_reward = rewards[i]
-    reward = 1 if chosen_arm == actual_reward else 0
-    linucb.partial_fit(context, np.array([chosen_arm]), np.array([reward]))
-    print(f"Initial Phase - Iteration {i+1}, Chosen arm: {chosen_arm}, Reward: {reward}")
 
-# Function to calculate cumulative regret
-def calculate_cumulative_regret(contexts, rewards, model):
-    cumulative_regret = []
-    total_regret = 0
-    optimal_reward = max(rewards)
-    
-    for i in range(len(contexts)):
-        context = contexts[i].reshape(1, -1)
-        chosen_arm = model.predict(context)
-        actual_reward = rewards[i]
-        reward = 1 if chosen_arm == actual_reward else 0
-        regret = optimal_reward - reward
-        total_regret += regret
-        cumulative_regret.append(total_regret)
-    
-    return cumulative_regret
+# Initialize algorithms
+linucb = LinUCBAlgorithm(n_arms=2, alpha=1.0)
+thompson_sampling = ThompsonSamplingAlgorithm(n_arms=2)
+epsilon_greedy = EpsilonGreedyAlgorithm(n_arms=2, epsilon=0.5)
+ucb1 = UCB1Algorithm(n_arms=2)
+softmax = SoftmaxAlgorithm(n_arms=2, tau=1.0)
+bayes_ucb = BayesUCBAlgorithm(n_arms=2, alpha=1.0)
 
-# Sequentially update the model based on feedback for the remaining tracks
-cumulative_regret = []
-optimal_reward = max(rewards)
-total_regret = 0
-correct_predictions = 0
+# Initial learning phase
+linucb.initial_learning_phase(contexts, rewards, initial_phase_size)
+thompson_sampling.initial_learning_phase(contexts, rewards, initial_phase_size)
+epsilon_greedy.initial_learning_phase(contexts, rewards, initial_phase_size)
+ucb1.initial_learning_phase(contexts, rewards, initial_phase_size)
+softmax.initial_learning_phase(contexts, rewards, initial_phase_size)
+bayes_ucb.initial_learning_phase(contexts, rewards, initial_phase_size)
 
-chosen_arms = []
-obtained_rewards = []
+# Evaluation phase
+contexts_eval = contexts[initial_phase_size:]
+rewards_eval = rewards[initial_phase_size:]
 
-for i in range(initial_phase_size, len(contexts)):
-    context = contexts[i].reshape(1, -1)
-    
-    # Select an action using LinUCB
-    chosen_arm = linucb.predict(context)
-    
-    # Get the actual reward
-    actual_reward = rewards[i]
-    reward = 1 if chosen_arm == actual_reward else 0
-    
-    # Track chosen arms and rewards
-    chosen_arms.append(chosen_arm)
-    obtained_rewards.append(reward)
-    
-    # Update the model with the observed reward
-    linucb.partial_fit(context, np.array([chosen_arm]), np.array([reward]))
-    
-    # Calculate regret
-    regret = optimal_reward - reward
-    total_regret += regret
-    cumulative_regret.append(total_regret)
+cumulative_regret_linucb, winning_rate_linucb = linucb.evaluate(contexts_eval, rewards_eval)
+cumulative_regret_thompson, winning_rate_thompson = thompson_sampling.evaluate(contexts_eval, rewards_eval)
+cumulative_regret_epsilon, winning_rate_epsilon = epsilon_greedy.evaluate(contexts_eval, rewards_eval)
+cumulative_regret_ucb1, winning_rate_ucb1 = ucb1.evaluate(contexts_eval, rewards_eval)
+cumulative_regret_softmax, winning_rate_softmax = softmax.evaluate(contexts_eval, rewards_eval)
+cumulative_regret_bayesucb, winning_rate_bayesucb = bayes_ucb.evaluate(contexts_eval, rewards_eval)
 
-    # Update correct predictions
-    if reward == 1:
-        correct_predictions += 1
-
-    print(f"Evaluation Phase - Iteration {i+1}, Chosen arm: {chosen_arm}, Reward: {reward}, Regret: {regret}")
-
-# Calculate winning rate
-winning_rate = correct_predictions / (len(contexts) - initial_phase_size) * 100
-
-# Plot cumulative regret
+# Plot cumulative regret comparison
 plt.figure(figsize=(10, 6))
-plt.plot(cumulative_regret, marker='o')
+plt.plot(cumulative_regret_linucb, marker='o', label='LinUCB (α={1.0})')
+plt.plot(cumulative_regret_thompson, marker='x', label='Thompson Sampling')
+plt.plot(cumulative_regret_epsilon, marker='*', label='Epsilon Greedy (ε={0.2})')
+plt.plot(cumulative_regret_ucb1, marker='+', label='UCB1')
+plt.plot(cumulative_regret_softmax, marker='s', label='Softmax (τ={0.1})')
+plt.plot(cumulative_regret_bayesucb, marker='d', label='BayesUCB (α={1.0})')
 plt.title('Cumulative Regret Over Time')
 plt.xlabel('Iteration')
 plt.ylabel('Cumulative Regret')
-plt.grid(True)
-plt.show()
-
-# Additional analysis: plot chosen arms and obtained rewards
-plt.figure(figsize=(10, 6))
-plt.plot(chosen_arms, marker='o', label='Chosen Arms')
-plt.plot(obtained_rewards, marker='x', label='Obtained Rewards')
-plt.title('Chosen Arms and Obtained Rewards Over Time')
-plt.xlabel('Iteration')
-plt.ylabel('Value')
 plt.legend()
 plt.grid(True)
 plt.show()
 
-print(f"Bandit optimization completed. Winning rate: {winning_rate:.2f}%")
+print(f"LinUCB Winning Rate: {winning_rate_linucb:.2f}%")
+print(f"Thompson Sampling Winning Rate: {winning_rate_thompson:.2f}%")
+print(f"Epsilon Greedy Winning Rate: {winning_rate_epsilon:.2f}%")
+print(f"UCB1 Winning Rate: {winning_rate_ucb1:.2f}%")
+print(f"Softmax Winning Rate: {winning_rate_softmax:.2f}%")
+print(f"BayesUCB Winning Rate: {winning_rate_bayesucb:.2f}%")
+
+# # Optional: Plot chosen arms and obtained rewards for additional analysis
+# def plot_arms_rewards(chosen_arms, obtained_rewards, title):
+#     plt.figure(figsize=(10, 6))
+#     plt.plot(chosen_arms, marker='o', label='Chosen Arms')
+#     plt.plot(obtained_rewards, marker='x', label='Obtained Rewards')
+#     plt.title(title)
+#     plt.xlabel('Iteration')
+#     plt.ylabel('Value')
+#     plt.legend()
+#     plt.grid(True)
+#     plt.show()
+
+# # Extract chosen arms and rewards from evaluation phase (for additional analysis)
+# def extract_arms_rewards(algorithm, contexts_eval, rewards_eval, is_thompson=False, is_linucb=False, is_bayesucb=False):
+#     chosen_arms = []
+#     obtained_rewards = []
+#     if is_thompson:
+#         alpha_beta_copy = np.ones((2, 2))
+#         for i in range(len(contexts_eval)):
+#             context = contexts_eval[i].reshape(1, -1)
+#             chosen_arm = algorithm.select_arm()
+#             actual_reward = rewards_eval[i]
+#             reward = 1 if chosen_arm == actual_reward else 0
+#             chosen_arms.append(chosen_arm)
+#             obtained_rewards.append(reward)
+#             alpha_beta_copy[chosen_arm, 0] += reward
+#             alpha_beta_copy[chosen_arm, 1] += 1 - reward
+#     elif is_linucb:
+#         for i in range(len(contexts_eval)):
+#             context = contexts_eval[i].reshape(1, -1)
+#             chosen_arm = algorithm.linucb.predict(context)
+#             actual_reward = rewards_eval[i]
+#             reward = 1 if chosen_arm == actual_reward else 0
+#             chosen_arms.append(chosen_arm)
+#             obtained_rewards.append(reward)
+#             algorithm.linucb.partial_fit(context, np.array([chosen_arm]), np.array([reward]))
+#     elif is_bayesucb:
+#         successes = np.ones(2)
+#         failures = np.ones(2)
+#         for i in range(len(contexts_eval)):
+#             chosen_arm = algorithm.select_arm()
+#             actual_reward = rewards_eval[i]
+#             reward = 1 if chosen_arm == actual_reward else 0
+#             chosen_arms.append(chosen_arm)
+#             obtained_rewards.append(reward)
+#             if reward == 1:
+#                 successes[chosen_arm] += 1
+#             else:
+#                 failures[chosen_arm] += 1
+#     else:
+#         for i in range(len(contexts_eval)):
+#             context = contexts_eval[i].reshape(1, -1)
+#             chosen_arm = algorithm.select_arm()
+#             actual_reward = rewards_eval[i]
+#             reward = 1 if chosen_arm == actual_reward else 0
+#             chosen_arms.append(chosen_arm)
+#             obtained_rewards.append(reward)
+#             algorithm.update(chosen_arm, reward)
+#     return chosen_arms, obtained_rewards
+
+# chosen_arms_linucb, obtained_rewards_linucb = extract_arms_rewards(linucb, contexts_eval, rewards_eval, is_linucb=True)
+# chosen_arms_thompson, obtained_rewards_thompson = extract_arms_rewards(thompson_sampling, contexts_eval, rewards_eval, is_thompson=True)
+# chosen_arms_epsilon, obtained_rewards_epsilon = extract_arms_rewards(epsilon_greedy, contexts_eval, rewards_eval)
+# chosen_arms_ucb1, obtained_rewards_ucb1 = extract_arms_rewards(ucb1, contexts_eval, rewards_eval)
+# chosen_arms_softmax, obtained_rewards_softmax = extract_arms_rewards(softmax, contexts_eval, rewards_eval)
+# chosen_arms_bayesucb, obtained_rewards_bayesucb = extract_arms_rewards(bayes_ucb, contexts_eval, rewards_eval, is_bayesucb=True)
+
+# plot_arms_rewards(chosen_arms_linucb, obtained_rewards_linucb, 'LinUCB - Chosen Arms and Obtained Rewards')
+# plot_arms_rewards(chosen_arms_thompson, obtained_rewards_thompson, 'Thompson Sampling - Chosen Arms and Obtained Rewards')
+# plot_arms_rewards(chosen_arms_epsilon, obtained_rewards_epsilon, 'Epsilon Greedy - Chosen Arms and Obtained Rewards')
+# plot_arms_rewards(chosen_arms_ucb1, obtained_rewards_ucb1, 'UCB1 - Chosen Arms and Obtained Rewards')
+# plot_arms_rewards(chosen_arms_softmax, obtained_rewards_softmax, 'Softmax - Chosen Arms and Obtained Rewards')
+# plot_arms_rewards(chosen_arms_bayesucb, obtained_rewards_bayesucb, 'BayesUCB - Chosen Arms and Obtained Rewards')
