@@ -1,5 +1,5 @@
 
-# Optimizing Contextual Bandit Algorithms for Personalized Music Recommendation (IE437 Data-Driven Decision Making and Control (Final Project))
+# Optimizing Contextual Bandit Algorithms for Personalized Music Recommendation
 
 ## Project Overview
 
