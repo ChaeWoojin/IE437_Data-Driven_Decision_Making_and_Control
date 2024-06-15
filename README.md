@@ -1,5 +1,4 @@
-
-# Optimizing Contextual Bandit Algorithms for Personalized Music Recommendation
+# Optimizing Contextual Bandit Algorithms for Personalized Music Recommendation 
 
 ## Project Overview
 
