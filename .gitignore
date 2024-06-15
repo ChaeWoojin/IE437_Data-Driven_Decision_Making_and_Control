@@ -179,7 +179,7 @@ hates_features.csv
 *.ipynb
 
 
-# share
 share
+results
 
 # End of https://www.toptal.com/developers/gitignore/api/python
