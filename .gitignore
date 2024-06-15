@@ -178,8 +178,8 @@ likes_features.csv
 hates_features.csv
 *.ipynb
 
-
 share
+Scripts
 results
 
 # End of https://www.toptal.com/developers/gitignore/api/python
