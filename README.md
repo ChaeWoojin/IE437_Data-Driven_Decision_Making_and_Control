@@ -70,7 +70,7 @@ The results are compared based on cumulative regret and winning rate. The algori
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/ChaeWoojin/IE437_Data-Driven_Decision_Making_and_Control.git
-   cd IE437_Data-Driven_Decision_Making_and_Control/candidates
+   cd IE437_Data-Driven_Decision_Making_and_Control
    ```
 
 2. **Install required packages:**
