@@ -85,7 +85,7 @@ The results are compared based on cumulative regret and winning rate. The algori
    # cd bandit_models 
    python comparison.py
 
-   # cd candidates 
+   # cd candidates
    python comparison.py
    ```
 
