@@ -36,9 +36,7 @@ class LinUCBAlgorithmBatch:
             reward = rewards[i]
             self.update([context], [arm], [reward])
 
-    def evaluate(self, contexts_train, rewards_train, contexts_eval, rewards_eval, alpha):
-        self.update(contexts_train, np.random.choice(2, size=contexts_train.shape[0]), rewards_train)
-        
+    def evaluate(self, contexts_eval, rewards_eval, alpha):
         cumulative_regret = []
         total_regret = 0
         correct_predictions = 0
