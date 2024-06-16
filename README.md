@@ -80,9 +80,13 @@ The results are compared based on cumulative regret and winning rate. The algori
 
 ## Usage
 
-1. **Run the main tuning script:**
+1. **Run the comparison script:**
    ```bash
-   python main_tuning.py
+   # cd bandit_models 
+   python comparison.py
+
+   # cd candidates 
+   python comparison.py
    ```
 
 2. **Visualize the results:**
