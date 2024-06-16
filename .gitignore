@@ -181,6 +181,8 @@ hates_features.csv
 share
 Scripts
 results
-online_learning_candidates
+
+nn.py
+linucb.py
 
 # End of https://www.toptal.com/developers/gitignore/api/python
