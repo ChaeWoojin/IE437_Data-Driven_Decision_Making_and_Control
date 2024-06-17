@@ -58,6 +58,7 @@ plt.title('Winning Rate Over Time')
 plt.legend()
 
 plt.tight_layout()
+plt.savefig('../results/online_learning_cumulative_regret_winning_rate.png')  # Save the plot as an image file
 plt.show()
 
 # Print final winning rates
