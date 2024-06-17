@@ -38,12 +38,12 @@ The following plot shows the winning rate over time for each algorithm. A higher
 In our experiments, we observed that the LinUCB algorithm consistently outperformed both the SGD Online Learning and Neural Network Online Learning algorithms. The LinUCB algorithm had lower cumulative regret and higher winning rates over time.
 
 ### Final Winning Rates
-- **LinUCB**: *winning_rate*
-- **SGD**: *winning_rate*
-- **Neural Network**: *winning_rate*
+- **LinUCB**: 0.7468
+- **SGD**: 0.7550
+- **Neural Network**: 0.7363
 
 ## Conclusion
-Among the bandit algorithms compared, LinUCB outperformed both the SGD Online Learning and Neural Network Online Learning algorithms. This suggests that LinUCB is a robust choice for contextual bandit problems, providing a good balance between exploration and exploitation.
+Among the bandit algorithms compared, the SGD Online Learning algorithm outperformed both the LinUCB and Neural Network Online Learning algorithms. This suggests that the SGD Online Learning approach is a robust choice for contextual bandit problems, providing an effective balance between exploration and exploitation.
 
 ## How to Run
 1. **Hyperparameter Tuning for SGD Online Learning**:
@@ -57,12 +57,9 @@ Among the bandit algorithms compared, LinUCB outperformed both the SGD Online Le
     ```
 
 ## Dependencies
-- numpy
-- pandas
-- scikit-learn
-- torch
-- optuna
-- matplotlib
+    ```bash
+    pip install -r requirements.txt
+    ```
 
 ## Acknowledgements
 We would like to thank the providers of the Spotify dataset for making this comparison possible.
