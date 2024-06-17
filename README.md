@@ -46,12 +46,7 @@ In our experiments, we observed that the LinUCB algorithm consistently outperfor
 Among the bandit algorithms compared, the SGD Online Learning algorithm outperformed both the LinUCB and Neural Network Online Learning algorithms. This suggests that the SGD Online Learning approach is a robust choice for contextual bandit problems, providing an effective balance between exploration and exploitation.
 
 ## How to Run
-1. **Hyperparameter Tuning for SGD Online Learning**:
-    ```bash
-    python sgd_batch_performance.py
-    ```
-
-2. **Comparison of All Algorithms**:
+1. **Comparison of All Algorithms**:
     ```bash
     python comparison.py
     ```
