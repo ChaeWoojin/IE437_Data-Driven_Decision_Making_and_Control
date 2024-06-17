@@ -64,4 +64,5 @@ plt.xlabel('Iteration')
 plt.ylabel('Cumulative Regret')
 plt.legend()
 plt.grid(True)
+# plt.savefig('../results/linucb_batch_performance.png')  # Save the plot as an image file
 plt.show()
