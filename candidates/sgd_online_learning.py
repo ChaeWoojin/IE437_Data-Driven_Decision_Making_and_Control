@@ -4,13 +4,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import SGDClassifier
 
 class SGDOnlineLearning:
-    def __init__(self, input_dim, alpha=5e-5, eta0=0.01, batch_size=32):
+    def __init__(self, input_dim, alpha=3.2e-06, eta0=0.01, batch_size=32):
         self.input_dim = input_dim
         self.alpha = alpha
         self.eta0 = eta0
         self.batch_size = batch_size
         self.scaler = StandardScaler()
-        self.model = SGDClassifier(loss='log_loss', learning_rate='constant', alpha=self.alpha, eta0=self.eta0, random_state=42)
+        self.model = SGDClassifier(loss='log_loss', learning_rate='constant', eta0=self.eta0, alpha=self.alpha, random_state=42)
         self.initialized = False
 
     def select_arm(self, context):
@@ -21,7 +21,7 @@ class SGDOnlineLearning:
         return 1 if prob >= 0.5 else 0
 
     def update(self, contexts, rewards):
-        contexts = self.scaler.transform(contexts)
+        # contexts = self.scaler.transform(contexts)
         self.model.partial_fit(contexts, rewards)
 
     def initial_learning_phase(self, contexts, rewards, initial_phase_size):
@@ -35,23 +35,23 @@ class SGDOnlineLearning:
         correct_predictions = 0
         total_predictions = 0
         winning_rate = []
-        optimal_reward = max(rewards_eval)
 
         contexts_eval = self.scaler.transform(contexts_eval)
 
         for i in range(0, len(contexts_eval), self.batch_size):
             context_batch = contexts_eval[i:i+self.batch_size]
-            reward_batch = rewards_eval[i:i+self.batch_size]
+            context_batch = contexts_eval[i:i + self.batch_size]
+            reward_batch = rewards_eval[i:i + self.batch_size]
             arms = [self.select_arm(context) for context in context_batch]
-            rewards_observed = [1 if arm == reward else 0 for arm, reward in zip(arms, reward_batch)]
-            self.update(context_batch, rewards_observed)
+            rewards_observed = (arms == reward_batch).astype(int)
+            self.model.partial_fit(context_batch, reward_batch)
 
-            batch_regret = sum(optimal_reward - reward for reward in rewards_observed)
+            batch_regret = sum(1 - rewards_observed)
             total_regret += batch_regret
             cumulative_regret.append(total_regret)
 
-            correct_predictions += sum(1 if arm == reward else 0 for arm, reward in zip(arms, reward_batch))
-            total_predictions += len(context_batch)
+            correct_predictions += sum(rewards_observed)
+            total_predictions += len(reward_batch)
             current_winning_rate = correct_predictions / total_predictions
             winning_rate.append(current_winning_rate)
 
