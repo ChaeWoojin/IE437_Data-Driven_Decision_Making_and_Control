@@ -107,15 +107,13 @@ def plot_results(cumulative_regret, winning_rate):
     plt.show()
 
 if __name__ == "__main__":
-    # best_params = tune_hyperparameters()
-    # print(f"Best parameters found: {best_params}")
+    best_params = tune_hyperparameters()
 
     # Load data and evaluate the model with the best hyperparameters
     file_path = '../data/spotify_personal_kaggle.csv'
     features, labels = load_data(file_path)
 
-    # model = SGDClassifier(loss=best_params['loss'], learning_rate='constant', eta0=best_params['eta0'], alpha=best_params['alpha'], random_state=42)
-    model = SGDClassifier(loss='log_loss', learning_rate='constant', eta0=0.01392704392300266, alpha=3.194564081966976e-06, random_state=42)
+    model = SGDClassifier(loss=best_params['loss'], learning_rate='constant', eta0=best_params['eta0'], alpha=best_params['alpha'], random_state=42)
 
     scaler = StandardScaler()
     contexts_train = scaler.fit_transform(features[:100])
@@ -153,7 +151,6 @@ if __name__ == "__main__":
         current_winning_rate = correct_predictions / total_predictions
         winning_rate.append(current_winning_rate)
     
-    print(cumulative_regret[:10])
-    # plot_results(cumulative_regret, winning_rate)
+    plot_results(cumulative_regret, winning_rate)
 
 # Best parameters found: {'alpha': 3.194564081966976e-06, 'eta0': 0.01392704392300266, 'loss': 'log_loss'}
