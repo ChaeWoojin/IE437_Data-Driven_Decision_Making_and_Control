@@ -57,4 +57,4 @@ From these experiments, we conclude that while conventional bandit algorithms ot
     ```
 
 ## Acknowledgements
-We would like to thank the providers of the Spotify dataset for making this comparison possible.
+I would like to thank the providers of the Spotify dataset for making this comparison possible.
