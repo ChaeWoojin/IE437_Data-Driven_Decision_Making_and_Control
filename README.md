@@ -27,7 +27,9 @@ The data used in this project is from the Spotify dataset, which includes featur
 ### Cumulative Regret Over Time
 The following plot shows the cumulative regret over time for each algorithm. Lower cumulative regret indicates better performance.
 
-![Cumulative Regret Over Time](images/cumulative_regret.png)
+![Cumulative Regret Over Time (Among Conventional Bandit Algorithms)](results/bandit_models_cumulative_regret.png)
+
+![Cumulative Regret Over Time (Best Bandit Algorithm (LinUCB) vs NN vs SGD Classifier)](results/online_learning_cumulative_regret_winning_rate.png)
 
 ### Winning Rate Over Time
 The following plot shows the winning rate over time for each algorithm. A higher winning rate indicates better performance.
