@@ -114,8 +114,8 @@ def plot_results(cumulative_regret, winning_rate):
     plt.xlabel('Batch Number')
     plt.ylabel('Winning Rate')
     plt.title('Winning Rate Over Time with Online Learning (NN)')
-
     plt.tight_layout()
+    # plt.savefig('../results/nn_batch_performance.png')  # Save the plot as an image file
     plt.show()
 
 if __name__ == "__main__":
