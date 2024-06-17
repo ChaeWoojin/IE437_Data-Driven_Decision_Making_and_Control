@@ -5,6 +5,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import optuna
+from scipy.special import expit  # Sigmoid function
 
 def load_data(file_path):
     data = pd.read_csv(file_path)
@@ -52,10 +53,17 @@ def objective(trial):
 
     contexts_eval = scaler.transform(contexts_eval)
 
+    def select_arm(context):
+        if loss == 'log_loss':
+            prob = model.predict_proba(context.reshape(1, -1))[0][1]
+        else:
+            prob = expit(model.decision_function(context.reshape(1, -1)))[0]
+        return 1 if prob >= 0.5 else 0
+
     for i in range(0, len(contexts_eval), batch_size):
         context_batch = contexts_eval[i:i + batch_size]
         reward_batch = rewards_eval[i:i + batch_size]
-        arms = model.predict(context_batch)
+        arms = [select_arm(context) for context in context_batch]
         rewards_observed = (arms == reward_batch).astype(int)
         model.partial_fit(context_batch, reward_batch)
 
@@ -95,17 +103,19 @@ def plot_results(cumulative_regret, winning_rate):
     plt.title('Winning Rate Over Time with Online Learning (SGD)')
 
     plt.tight_layout()
+    plt.savefig('../results/sgd_batch_performance.png')  # Save the plot as an image file
     plt.show()
 
 if __name__ == "__main__":
-    best_params = tune_hyperparameters()
-    print(f"Best parameters found: {best_params}")
+    # best_params = tune_hyperparameters()
+    # print(f"Best parameters found: {best_params}")
 
     # Load data and evaluate the model with the best hyperparameters
     file_path = '../data/spotify_personal_kaggle.csv'
     features, labels = load_data(file_path)
 
-    model = SGDClassifier(loss=best_params['loss'], learning_rate='constant', eta0=best_params['eta0'], alpha=best_params['alpha'], random_state=42)
+    # model = SGDClassifier(loss=best_params['loss'], learning_rate='constant', eta0=best_params['eta0'], alpha=best_params['alpha'], random_state=42)
+    model = SGDClassifier(loss='log_loss', learning_rate='constant', eta0=0.01392704392300266, alpha=3.194564081966976e-06, random_state=42)
 
     scaler = StandardScaler()
     contexts_train = scaler.fit_transform(features[:100])
@@ -123,10 +133,14 @@ if __name__ == "__main__":
 
     batch_size = 32
 
+    def select_arm(context):
+        prob = model.predict_proba(context.reshape(1, -1))[0][1]
+        return 1 if prob >= 0.5 else 0
+
     for i in range(0, len(contexts_eval), batch_size):
         context_batch = contexts_eval[i:i + batch_size]
         reward_batch = rewards_eval[i:i + batch_size]
-        arms = model.predict(context_batch)
+        arms = [select_arm(context) for context in context_batch]
         rewards_observed = (arms == reward_batch).astype(int)
         model.partial_fit(context_batch, reward_batch)
 
@@ -138,7 +152,8 @@ if __name__ == "__main__":
         total_predictions += len(reward_batch)
         current_winning_rate = correct_predictions / total_predictions
         winning_rate.append(current_winning_rate)
+    
+    print(cumulative_regret[:10])
+    # plot_results(cumulative_regret, winning_rate)
 
-    plot_results(cumulative_regret, winning_rate)
-
-# Best parameters found: {'alpha': 4.171535856354112e-05, 'eta0': 0.013673752596489827, 'loss': 'log_loss'}
+# Best parameters found: {'alpha': 3.194564081966976e-06, 'eta0': 0.01392704392300266, 'loss': 'log_loss'}
