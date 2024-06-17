@@ -25,17 +25,16 @@ The data used in this project is from the Spotify dataset, which includes featur
 ## Performance Comparison
 
 ### Cumulative Regret Over Time
-The following plot shows the cumulative regret over time for each algorithm. Lower cumulative regret indicates better performance. This figure implies that among conventional bandit algorithms, only LinUCB performs well. In other words, the others did not efficiently utilize the features of the data, resulting in performance equivalent to a random policy, which yields a winning rate of around 50%.
+The following plot shows the cumulative regret over time for each algorithm. Lower cumulative regret indicates better performance. This figure implies that among conventional bandit algorithms, only LinUCB performs well. In other words, the other algorithms did not efficiently utilize the features of the data, resulting in performance equivalent to a random policy, which yields a winning rate of around 50%.
 
 ![Cumulative Regret Over Time (Among Conventional Bandit Algorithms)](results/bandit_models_cumulative_regret.png)
 
 ### Winning Rate Over Time
-The following plot shows the winning rate over time for each algorithm. A higher winning rate indicates better performance. After tuning the hyperparameters, the SGD Classifier recorded the highest performance among them. Additionally, we can observe that although LinUCB does not perform well in the short term, as more data accumulates, it is expected to provide satisfactory performance compared to the others.
+The following plot shows the winning rate over time for each algorithm. A higher winning rate indicates better performance. Since only LinUCB performed well among conventional bandit algorithms, I initially compared LinUCB with the Neural Network (NN) and SGD Classifier. After tuning the hyperparameters, the SGD Classifier recorded the highest performance among them. Additionally, we can observe that although LinUCB does not perform well in the short term, as more data accumulates, it is expected to provide satisfactory performance compared to the others.
 
 ![Winning Rate Over Time (Right)](results/online_learning_cumulative_regret_winning_rate.png)
 
 ## Results
-In our experiments, we observed that the LinUCB algorithm consistently outperformed both the SGD Online Learning and Neural Network Online Learning algorithms. The LinUCB algorithm had lower cumulative regret and higher winning rates over time.
 
 ### Final Winning Rates
 - **LinUCB**: 0.7468
@@ -43,7 +42,7 @@ In our experiments, we observed that the LinUCB algorithm consistently outperfor
 - **Neural Network**: 0.7363
 
 ## Conclusion
-Among the bandit algorithms compared, the SGD Online Learning algorithm outperformed both the LinUCB and Neural Network Online Learning algorithms. This suggests that the SGD Online Learning approach is a robust choice for contextual bandit problems, providing an effective balance between exploration and exploitation.
+From these experiments, we conclude that while conventional bandit algorithms other than LinUCB do not perform well due to their inability to leverage the characteristics of the features provided, the LinUCB algorithm shows potential in the long run. However, the SGD Online Learning algorithm consistently outperformed both the LinUCB and Neural Network Online Learning algorithms, demonstrating lower cumulative regret and higher winning rates over time. This indicates that the SGD algorithm can efficiently utilize the features of the data, making it the most effective approach for personalized music recommendation in this setting.
 
 ## How to Run
 1. **Comparison of All Algorithms**:
