@@ -8,7 +8,7 @@ This project implements and compares various online learning algorithms for band
 2. SGD Online Learning
 3. Neural Network Online Learning
 
-## Algorithms Implemented
+## Algorithms Implemented (Selected)
 
 ### LinUCB
 LinUCB is a contextual bandit algorithm that uses a linear model to estimate the expected reward for each arm. It selects arms based on the upper confidence bound, balancing exploration and exploitation.
