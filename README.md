@@ -29,12 +29,10 @@ The following plot shows the cumulative regret over time for each algorithm. Low
 
 ![Cumulative Regret Over Time (Among Conventional Bandit Algorithms)](results/bandit_models_cumulative_regret.png)
 
-![Cumulative Regret Over Time (Best Bandit Algorithm (LinUCB) vs NN vs SGD Classifier)](results/online_learning_cumulative_regret_winning_rate.png)
-
 ### Winning Rate Over Time
 The following plot shows the winning rate over time for each algorithm. A higher winning rate indicates better performance.
 
-![Winning Rate Over Time](images/winning_rate.png)
+![Winning Rate Over Time (Right)](results/online_learning_cumulative_regret_winning_rate.png)
 
 ## Results
 In our experiments, we observed that the LinUCB algorithm consistently outperformed both the SGD Online Learning and Neural Network Online Learning algorithms. The LinUCB algorithm had lower cumulative regret and higher winning rates over time.
